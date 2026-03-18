@@ -90,21 +90,6 @@ class MainActivity : ComponentActivity() {
 
                     Timber.d("Found: $description at $path")
                     Toast.makeText(this, "Connected: $description", Toast.LENGTH_LONG).show()
-
-                    // --- WRITE TEST ---
-                    try {
-                        val testFile = File(usbRoot, "hello_usb.txt")
-                        testFile.writeText("Success! App wrote to: $description")
-                        Timber.d("Successfully wrote to hello_usb.txt")
-                    } catch (e: Exception) {
-                        Timber.e("Write failed: ${e.message}")
-                    }
-
-                    // --- READ/LIST TEST ---
-                    val files = usbRoot.listFiles()
-                    files?.forEach { file ->
-                        Timber.d("File Found: ${file.name}")
-                    }
                 }
             }
         }

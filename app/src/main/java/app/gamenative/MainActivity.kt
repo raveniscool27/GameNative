@@ -204,11 +204,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         
-        // 2. Start the process immediately
-        if (checkAndRequestPermission()) {
-            runUsbDetection()
-        }
-        
         // Full immersive mode - transparent system bars for console-like experience
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(TRANSPARENT),
@@ -216,6 +211,12 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
 
+// USB storage detection
+        if (checkAndRequestPermission()) {
+            runUsbDetection()
+        }
+
+     
         // Apply immersive mode based on user preference
         applyImmersiveMode()
 

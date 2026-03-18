@@ -53,10 +53,85 @@ import java.util.EnumSet
 import kotlin.math.abs
 import okio.Path.Companion.toOkioPath
 import timber.log.Timber
+import android.os.storage.StorageVolume
+import androidx.appcompat.app.AppCompatActivity
+import java.io.File
+import android.net.Uri
+import android.os.Environment
+import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+ // 1. Permission Launcher: Handles the return from System Settings
+    private val storagePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) {
+        // When user returns, try scanning again
+        runUsbDetection()
+    }
+
+    // 3. Logic to detect ANY USB storage and log/write files
+    private fun runUsbDetection() {
+        val storageManager = getSystemService(STORAGE_SERVICE) as StorageManager
+        val volumes = storageManager.storageVolumes
+        var foundAny = false
+
+        for (volume in volumes) {
+            // Filter for removable devices (USB/SD) that aren't internal storage
+            if (volume.isRemovable && !volume.isPrimary) {
+                val uuid = volume.uuid ?: continue
+                val path = "/storage/$uuid"
+                val usbRoot = File(path)
+
+                if (usbRoot.exists()) {
+                    foundAny = true
+                    val description = volume.getDescription(this)
+
+                    Timber.d("Found: $description at $path")
+                    Toast.makeText(this, "Connected: $description", Toast.LENGTH_LONG).show()
+
+                    // --- WRITE TEST ---
+                    try {
+                        val testFile = File(usbRoot, "hello_usb.txt")
+                        testFile.writeText("Success! App wrote to: $description")
+                        Timber.d("Successfully wrote to hello_usb.txt")
+                    } catch (e: Exception) {
+                        Timber.e("Write failed: ${e.message}")
+                    }
+
+                    // --- READ/LIST TEST ---
+                    val files = usbRoot.listFiles()
+                    files?.forEach { file ->
+                        Timber.d("File Found: ${file.name}")
+                    }
+                }
+            }
+        }
+
+        if (!foundAny) {
+            Timber.i("No USB storage found.")
+            Toast.makeText(this, "No USB detected", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 4. Permission helper for Android 11+ (API 30+)
+    private fun checkAndRequestPermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Toast.makeText(this, "Please allow 'All Files Access' for USB", Toast.LENGTH_LONG).show()
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data = "package:$packageName".toUri()
+                storagePermissionLauncher.launch(intent)
+                return false
+            }
+        }
+        return true
+    }
+    
     companion object {
         private var totalIndex = 0
 

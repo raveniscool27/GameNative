@@ -110,6 +110,21 @@ class MainActivity : ComponentActivity() {
                 storagePermissionLauncher.launch(intent)
                 return false
             }
+        } else {
++            // Android 10 and below use standard storage permissions
++            if (ContextCompat.checkSelfPermission(
++                    this,
++                    Manifest.permission.READ_EXTERNAL_STORAGE
++                ) != PackageManager.PERMISSION_GRANTED
++            ) {
++                // Request READ_EXTERNAL_STORAGE for older APIs
++                ActivityCompat.requestPermissions(
++                    this,
++                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
++                    REQUEST_CODE_STORAGE_PERMISSION
++                )
++                return false
++            }
         }
         return true
     }

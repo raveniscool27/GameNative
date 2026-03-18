@@ -67,8 +67,11 @@ class MainActivity : ComponentActivity() {
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) {
-        // When user returns, try scanning again
-        runUsbDetection()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageManager()) {
+            runUsbDetection()
+        } else {
+            Toast.makeText(this, "All Files Access is required to scan USB", Toast.LENGTH_LONG).show()
+        }
     }
 
     // 3. Logic to detect ANY USB storage and log/write files

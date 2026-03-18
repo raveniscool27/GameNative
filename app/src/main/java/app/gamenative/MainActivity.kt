@@ -53,11 +53,14 @@ import java.util.EnumSet
 import kotlin.math.abs
 import okio.Path.Companion.toOkioPath
 import timber.log.Timber
+import android.content.pm.PackageManager
 import android.os.storage.StorageManager
 import java.io.File
 import android.os.Environment
 import android.provider.Settings
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 
 @AndroidEntryPoint
@@ -138,6 +141,7 @@ class MainActivity : ComponentActivity() {
     }
     
     companion object {
+        private const val REQUEST_CODE_STORAGE_PERMISSION = 1001
         private var totalIndex = 0
 
         private var currentOrientationChangeValue: Int = 0
@@ -210,6 +214,24 @@ class MainActivity : ComponentActivity() {
         super.attachBaseContext(context)
     }
 
+        // More permission check scripts due to the varying android versions.
+        override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_STORAGE_PERMISSION) {
+            val granted = grantResults.isNotEmpty() &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
+            if (granted) {
+                runUsbDetection()
+            } else {
+                Toast.makeText(this, "Storage permission is required to scan USB", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         
         // Full immersive mode - transparent system bars for console-like experience

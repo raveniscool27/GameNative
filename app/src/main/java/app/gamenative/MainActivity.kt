@@ -63,6 +63,16 @@ import androidx.core.net.toUri
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+  private val readStoragePermissionLauncher = registerForActivityResult(
+    ActivityResultContracts.RequestPermission(),
+) { granted ->
+    if (granted) {
+        runUsbDetection()
+    } else {
+        Toast.makeText(this, "Storage permission is required to scan USB", Toast.LENGTH_LONG).show()
+    }
+}
+ 
  // 1. Permission Launcher: Handles the return from System Settings
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
@@ -86,7 +96,7 @@ class MainActivity : ComponentActivity() {
                 val uuid = volume.uuid ?: continue
                 val path = "/storage/$uuid"
                 val usbRoot = File(path)
-
+            // Notifies that the device has been connected.
                 if (usbRoot.exists()) {
                     foundAny = true
                     val description = volume.getDescription(this)
@@ -96,7 +106,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
+          // Notifies that no USB devices have been detected.
         if (!foundAny) {
             Timber.i("No USB storage found.")
             Toast.makeText(this, "No USB detected", Toast.LENGTH_SHORT).show()
@@ -114,20 +124,15 @@ class MainActivity : ComponentActivity() {
                 return false
             }
         } else {
-+            // Android 10 and below use standard storage permissions
-+            if (ContextCompat.checkSelfPermission(
-+                    this,
-+                    Manifest.permission.READ_EXTERNAL_STORAGE
-+                ) != PackageManager.PERMISSION_GRANTED
-+            ) {
-+                // Request READ_EXTERNAL_STORAGE for older APIs
-+                ActivityCompat.requestPermissions(
-+                    this,
-+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-+                    REQUEST_CODE_STORAGE_PERMISSION
-+                )
-+                return false
-+            }
+         // Android 10 and below use standard storage permissions
+         if (ContextCompat.checkSelfPermission(
+                 this,
+                 Manifest.permission.READ_EXTERNAL_STORAGE
+             ) != PackageManager.PERMISSION_GRANTED
+         ) {
+            readStoragePermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+             return false
+            }
         }
         return true
     }

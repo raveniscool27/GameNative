@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
         Toast.makeText(this, "Storage permission is required to scan USB", Toast.LENGTH_LONG).show()
     }
 }
- 
+
  // 1. Permission Launcher: Handles the return from System Settings
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
@@ -139,7 +139,7 @@ class MainActivity : ComponentActivity() {
         }
         return true
     }
-    
+
     companion object {
         private const val REQUEST_CODE_STORAGE_PERMISSION = 1001
         private var totalIndex = 0
@@ -172,7 +172,7 @@ class MainActivity : ComponentActivity() {
         fun hasPendingLaunchRequest(): Boolean {
             return pendingLaunchRequest != null
         }
-        
+
         @Volatile
         var wasLaunchedViaExternalIntent: Boolean = false
     }
@@ -215,9 +215,10 @@ class MainActivity : ComponentActivity() {
     }
 
         // More permission check scripts due to the varying android versions.
+        @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)} passing\n      in a {@link RequestMultiplePermissions} object for the {@link ActivityResultContract} and\n      handling the result in the {@link ActivityResultCallback#onActivityResult(Object) callback}.")
         override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<out String>,
+        permissions: Array<String>,
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -231,9 +232,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        
+
         // Full immersive mode - transparent system bars for console-like experience
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(TRANSPARENT),
@@ -246,7 +247,7 @@ class MainActivity : ComponentActivity() {
             runUsbDetection()
         }
 
-     
+
         // Apply immersive mode based on user preference
         applyImmersiveMode()
 

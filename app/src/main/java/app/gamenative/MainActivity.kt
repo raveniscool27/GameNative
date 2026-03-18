@@ -54,12 +54,11 @@ import kotlin.math.abs
 import okio.Path.Companion.toOkioPath
 import timber.log.Timber
 import android.os.storage.StorageVolume
-import androidx.appcompat.app.AppCompatActivity
+import android.os.storage.StorageManager
 import java.io.File
 import android.net.Uri
 import android.os.Environment
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.core.net.toUri
 

@@ -53,6 +53,7 @@ import java.util.EnumSet
 import kotlin.math.abs
 import okio.Path.Companion.toOkioPath
 import timber.log.Timber
+import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import androidx.appcompat.app.AppCompatActivity
 import java.io.File
@@ -206,6 +207,12 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        
+        // 2. Start the process immediately
+        if (checkAndRequestPermission()) {
+            runUsbDetection()
+        }
+        
         // Full immersive mode - transparent system bars for console-like experience
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(TRANSPARENT),

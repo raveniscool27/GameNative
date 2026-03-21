@@ -1261,8 +1261,9 @@
     <string name="download_failed_message">Не вдалося завантажити необхідний файл. Перевірте підключення до мережі та спробуйте ще раз.</string>
     <string name="install_failed_title">Помилка інсталяції</string>
     <string name="install_failed_message">Не вдалося інсталювати системні файли. Спробуйте ще раз. Якщо проблема не зникає, спробуйте іншу мережу або скористайтеся VPN.</string>
-    <string name="usb_all_files_access_prompt">"Будь ласка, дозвольте \"Доступ до всіх файлів\" для USB "</string>
+    <string name="usb_all_files_access_prompt">Будь ласка, дозвольте "Доступ до всіх файлів" для USB.</string>
     <string name="usb_all_files_access_required">Для сканування USB-накопичувача потрібен доступ до всіх файлів</string>
+    <string name="usb_connected">Підключено: %s</string>
     <string name="usb_not_detected">USB не виявлено</string>
     <string name="usb_storage_permission_required">Для сканування USB потрібен дозвіл на зберігання даних</string>
 </resources>

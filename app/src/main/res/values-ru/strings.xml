@@ -1198,8 +1198,9 @@ https://gamenative.app
     <string name="download_failed_message">Не удалось загрузить необходимый файл. Проверьте подключение к сети и попробуйте снова.</string>
     <string name="install_failed_title">Ошибка установки</string>
     <string name="install_failed_message">Не удалось установить системные файлы. Попробуйте снова. Если проблема сохраняется, попробуйте другую сеть или используйте VPN.</string>
-    <string name="usb_all_files_access_prompt">"Пожалуйста, предоставьте доступ ко «Всем файлам» для USB. "</string>
+    <string name="usb_all_files_access_prompt">Пожалуйста, предоставьте доступ ко «Всем файлам» для USB.</string>
     <string name="usb_all_files_access_required">Для сканирования USB-накопителя требуется доступ ко всем файлам.</string>
+    <string name="usb_connected">Подключено: %s</string>
     <string name="usb_not_detected">USB-устройство не обнаружено</string>
     <string name="usb_storage_permission_required">Для сканирования USB требуется разрешение на доступ к хранилищу.</string>
 </resources>

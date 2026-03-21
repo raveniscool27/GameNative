@@ -1262,11 +1262,11 @@
     <string name="download_failed_message">無法下載必要的檔案。請檢查您的網路連線後重試。</string>
     <string name="install_failed_title">安裝失敗</string>
     <string name="install_failed_message">無法安裝系統檔案。請重試。如果問題持續存在，請嘗試使用其他網路或使用 VPN。</string>
-    <string name="usb_all_files_access_prompt">请为 USB 启用“所有文件访问”权限。</string>
-    <string name="usb_all_files_access_required">"扫描 USB 需要“所有文件访问”权限。 "</string>
-    <string name="usb_storage_permission_required">扫描 USB 需要存储权限。</string>
-    <string name="usb_connected">已连接：%s</string>
-    <string name="usb_not_detected">未检测到 USB</string>
+    <string name="usb_all_files_access_prompt">請為 USB 啟用「所有檔案存取」權限。</string>
+    <string name="usb_all_files_access_required">掃描 USB 需要「所有檔案存取」權限。</string>
+    <string name="usb_storage_permission_required">掃描 USB 需要儲存權限。</string>
+    <string name="usb_connected">已連線：%s</string>
+    <string name="usb_not_detected">未偵測到 USB</string>
 </resources>
 
 

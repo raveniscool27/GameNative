@@ -171,6 +171,12 @@ class MainActivity : ComponentActivity() {
             return pendingLaunchRequest != null
         }
 
+        fun peekPendingLaunchRequest(): IntentLaunchManager.LaunchRequest? {
+            synchronized(this) {
+                return pendingLaunchRequest
+            }
+        }
+
         @Volatile
         var wasLaunchedViaExternalIntent: Boolean = false
     }

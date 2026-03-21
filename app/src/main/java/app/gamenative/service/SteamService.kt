@@ -9,7 +9,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.IBinder
 import android.util.Base64
-import android.widget.Toast
+import app.gamenative.ui.util.SnackbarManager
 import androidx.room.withTransaction
 import app.gamenative.BuildConfig
 import app.gamenative.NetworkMonitor
@@ -1854,6 +1854,10 @@ class SteamService : Service(), IChallengeUrlChanged {
                     MarkerUtils.removeMarker(appDirPath, Marker.STEAM_DLL_REPLACED)
                     MarkerUtils.removeMarker(appDirPath, Marker.STEAM_COLDCLIENT_USED)
                 }
+
+                // clean up DB record BEFORE notifying UI to avoid stale "Resume" button
+                instance?.downloadingAppInfoDao?.deleteApp(downloadInfo.gameId)
+
                 PluviaApp.events.emit(AndroidEvent.LibraryInstallStatusChanged(downloadInfo.gameId))
 
                 // Clear persisted bytes file on successful completion
@@ -1894,13 +1898,7 @@ class SteamService : Service(), IChallengeUrlChanged {
 
                 removeDownloadJob(downloadInfo.gameId)
                 instance?.let { service ->
-                    service.scope.launch(Dispatchers.Main) {
-                        Toast.makeText(
-                            service.applicationContext,
-                            service.getString(R.string.download_failed_try_again),
-                            Toast.LENGTH_LONG,
-                        ).show()
-                    }
+                    SnackbarManager.show(service.getString(R.string.download_failed_try_again))
                 }
             }
 
@@ -3152,7 +3150,7 @@ class SteamService : Service(), IChallengeUrlChanged {
 
         isConnected = false
 
-        val event = SteamEvent.Disconnected
+        val event = SteamEvent.Disconnected(isTerminal = false)
         PluviaApp.events.emit(event)
 
         steamClient!!.disconnect()
@@ -3202,7 +3200,8 @@ class SteamService : Service(), IChallengeUrlChanged {
                 if (isRunning && !isStopping) connectToSteam()
             }
         } else {
-            val event = SteamEvent.Disconnected
+            // only terminal when retries exhausted, not when user/system stopped the service
+            val event = SteamEvent.Disconnected(isTerminal = !isStopping)
             PluviaApp.events.emit(event)
 
             clearValues()

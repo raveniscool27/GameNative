@@ -1268,7 +1268,7 @@
     <string name="download_failed_message">Nie udało się pobrać wymaganego pliku. Sprawdź połączenie sieciowe i spróbuj ponownie.</string>
     <string name="install_failed_title">Instalacja nie powiodła się</string>
     <string name="install_failed_message">Nie udało się zainstalować plików systemowych. Spróbuj ponownie. Jeśli problem będzie się powtarzał, spróbuj innej sieci lub użyj VPN.</string>
-    <string name="usb_all_files_access_prompt">"Proszę zezwolić na „Dostęp do wszystkich plików” dla USB. "</string>
+    <string name="usb_all_files_access_prompt">Proszę zezwolić na „Dostęp do wszystkich plików” dla USB.</string>
     <string name="usb_all_files_access_required">Wymagany jest dostęp do wszystkich plików, aby przeskanować USB.</string>
     <string name="usb_storage_permission_required">Wymagane jest uprawnienie do pamięci masowej, aby przeskanować USB.</string>
     <string name="usb_connected">Połączono: %s</string>

@@ -1274,4 +1274,11 @@
     <string name="library_source_not_logged_in_epic">Sign in to access your Epic library.</string>
     <string name="library_source_not_logged_in_amazon">Sign in to access your Amazon library.</string>
     <string name="library_source_no_custom_games">You have not added any custom games.</string>
+
+    <!-- External Storage Detection -->
+    <string name="usb_all_files_access_prompt">Please allow \'All Files Access\' for USB</string>
+    <string name="usb_all_files_access_required">All Files Access is required to scan USB</string>
+    <string name="usb_storage_permission_required">Storage permission is required to scan USB</string>
+    <string name="usb_connected">Connected: %s</string>
+    <string name="usb_not_detected">No USB detected</string>
 </resources>

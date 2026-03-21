@@ -1259,4 +1259,9 @@
     <string name="download_failed_message">无法下载所需文件。请检查您的网络连接后重试。</string>
     <string name="install_failed_title">安装失败</string>
     <string name="install_failed_message">无法安装系统文件。请重试。如果问题持续存在，请尝试使用其他网络或使用 VPN。</string>
+    <string name="usb_all_files_access_prompt">请为 USB 启用“所有文件访问”权限。</string>
+    <string name="usb_all_files_access_required">"扫描 USB 需要“所有文件访问”权限。 "</string>
+    <string name="usb_storage_permission_required">扫描 USB 需要存储权限。</string>
+    <string name="usb_connected">已连接：%s</string>
+    <string name="usb_not_detected">未检测到 USB</string>
 </resources>

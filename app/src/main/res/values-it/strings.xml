@@ -1261,4 +1261,9 @@
     <string name="download_failed_message">Non è stato possibile scaricare un file necessario. Controlla la connessione di rete e riprova.</string>
     <string name="install_failed_title">Installazione non riuscita</string>
     <string name="install_failed_message">Non è stato possibile installare i file di sistema. Riprova. Se il problema persiste, prova una rete diversa o usa una VPN.</string>
+    <string name="usb_all_files_access_prompt">"Consenti l'accesso a \"Tutti i file\" per la USB. "</string>
+    <string name="usb_all_files_access_required">È richiesto l\'accesso a tutti i file per scansionare la USB.</string>
+    <string name="usb_storage_permission_required">È richiesta l\'autorizzazione di archiviazione per scansionare l\'USB.</string>
+    <string name="usb_connected">Connesso: %s</string>
+    <string name="usb_not_detected">Nessuna USB rilevata</string>
 </resources>

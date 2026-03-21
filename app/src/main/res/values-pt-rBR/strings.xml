@@ -1135,4 +1135,9 @@
     <string name="download_failed_message">Um arquivo necessário não pôde ser baixado. Verifique sua conexão de rede e tente novamente.</string>
     <string name="install_failed_title">Falha na Instalação</string>
     <string name="install_failed_message">Os arquivos do sistema não puderam ser instalados. Tente novamente. Se o problema persistir, tente uma rede diferente ou use uma VPN.</string>
+    <string name="usb_all_files_access_prompt">"Por favor, permita o 'Acesso a Todos os Arquivos' para o USB. "</string>
+    <string name="usb_all_files_access_required">O acesso a todos os arquivos é necessário para escanear o USB.</string>
+    <string name="usb_storage_permission_required">A permissão de armazenamento é necessária para escanear o USB.</string>
+    <string name="usb_connected">"Conectado: %s "</string>
+    <string name="usb_not_detected">Nenhum USB detectado</string>
 </resources>

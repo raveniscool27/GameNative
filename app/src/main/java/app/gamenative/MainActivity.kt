@@ -58,8 +58,6 @@ import android.os.storage.StorageManager
 import java.io.File
 import android.os.Environment
 import android.provider.Settings
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 
@@ -72,7 +70,7 @@ class MainActivity : ComponentActivity() {
     if (granted) {
         runUsbDetection()
     } else {
-        Toast.makeText(this, "Storage permission is required to scan USB", Toast.LENGTH_LONG).show()
+        SnackbarManager.show(getString(R.string.usb_storage_permission_required))
     }
 }
 
@@ -83,7 +81,7 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageManager()) {
             runUsbDetection()
         } else {
-            Toast.makeText(this, "All Files Access is required to scan USB", Toast.LENGTH_LONG).show()
+            SnackbarManager.show(getString(R.string.usb_all_files_access_required))
         }
     }
 
@@ -105,14 +103,14 @@ class MainActivity : ComponentActivity() {
                     val description = volume.getDescription(this)
 
                     Timber.d("Found: $description at $path")
-                    Toast.makeText(this, "Connected: $description", Toast.LENGTH_LONG).show()
+                    SnackbarManager.show(getString(R.string.usb_connected, description))
                 }
             }
         }
           // Notifies that no USB devices have been detected.
         if (!foundAny) {
             Timber.i("No USB storage found.")
-            Toast.makeText(this, "No USB detected", Toast.LENGTH_SHORT).show()
+            SnackbarManager.show(getString(R.string.usb_not_detected))
         }
     }
 
@@ -120,7 +118,7 @@ class MainActivity : ComponentActivity() {
     private fun checkAndRequestPermission(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
-                Toast.makeText(this, "Please allow 'All Files Access' for USB", Toast.LENGTH_LONG).show()
+                SnackbarManager.show(getString(R.string.usb_all_files_access_prompt))
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 intent.data = "package:$packageName".toUri()
                 storagePermissionLauncher.launch(intent)
@@ -228,7 +226,7 @@ class MainActivity : ComponentActivity() {
             if (granted) {
                 runUsbDetection()
             } else {
-                Toast.makeText(this, "Storage permission is required to scan USB", Toast.LENGTH_LONG).show()
+                SnackbarManager.show(getString(R.string.usb_storage_permission_required))
             }
         }
     }

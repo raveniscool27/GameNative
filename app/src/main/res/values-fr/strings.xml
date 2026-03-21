@@ -1265,6 +1265,11 @@
     <string name="download_failed_message">Un fichier requis n\'a pas pu être téléchargé. Veuillez vérifier votre connexion réseau et réessayer.</string>
     <string name="install_failed_title">Échec de l\'installation</string>
     <string name="install_failed_message">Les fichiers système n\'ont pas pu être installés. Veuillez réessayer. Si le problème persiste, essayez un autre réseau ou utilisez un VPN.</string>
+    <string name="usb_all_files_access_prompt">"Veuillez autoriser l'« Accès à tous les fichiers » pour l'USB. "</string>
+    <string name="usb_all_files_access_required">L\'accès à tous les fichiers est requis pour analyser l\'USB.</string>
+    <string name="usb_storage_permission_required">L\'autorisation de stockage est requise pour analyser l\'USB.</string>
+    <string name="usb_connected">Connecté : %s</string>
+    <string name="usb_not_detected">Aucun périphérique USB détecté</string>
 </resources>
 
 

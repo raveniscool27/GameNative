@@ -61,15 +61,13 @@ import kotlin.math.abs
 import androidx.core.content.edit
 import androidx.core.net.toUri
 
-@AndroidEntryPoint
-
 data class StorageInfo(
     val rootPath: String,
     val appPath: String,
     val isRemovable: Boolean,
     val isWritable: Boolean
 )
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
   private val readStoragePermissionLauncher = registerForActivityResult(

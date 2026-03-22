@@ -221,7 +221,7 @@ class MainActivity : ComponentActivity() {
                         testFile.writeText("test")
                         testFile.delete()
                         true
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         false
                     }
 
@@ -344,7 +344,7 @@ class MainActivity : ComponentActivity() {
 
         // Run new usb detection code
         checkAndRequestPermission()
-        
+
         // Apply immersive mode based on user preference
         applyImmersiveMode()
 

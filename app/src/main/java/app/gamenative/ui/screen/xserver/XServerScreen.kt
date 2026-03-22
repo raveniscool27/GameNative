@@ -785,7 +785,7 @@ fun XServerScreen(
         showQuickMenu = false
     }
 
-    val onQuickMenuItemSelected: (Int) -> Unit = { itemId ->
+    val onQuickMenuItemSelected: (Int) -> Boolean = { itemId ->
         when (itemId) {
             QuickMenuAction.KEYBOARD -> {
                 keyboardRequestedFromOverlay = true
@@ -812,6 +812,7 @@ fun XServerScreen(
                         show()
                     }
                 }
+                true
             }
 
             QuickMenuAction.INPUT_CONTROLS -> {
@@ -836,6 +837,7 @@ fun XServerScreen(
                     }
                 }
                 areControlsVisible = !areControlsVisible
+                true
             }
 
             QuickMenuAction.EDIT_CONTROLS -> {
@@ -911,12 +913,14 @@ fun XServerScreen(
                         areControlsVisible = true
                     }
                 }
+                true
             }
 
             QuickMenuAction.EDIT_PHYSICAL_CONTROLLER -> {
                 PostHog.capture(event = "edit_physical_controller_from_menu")
                 keepPausedForEditor = true
                 showPhysicalControllerDialog = true
+                true
             }
 
             QuickMenuAction.PERFORMANCE_HUD -> {
@@ -928,6 +932,7 @@ fun XServerScreen(
                     event = "performance_hud_toggled",
                     properties = mapOf("enabled" to enabled),
                 )
+                false
             }
 
             QuickMenuAction.EXIT_GAME -> {
@@ -942,7 +947,10 @@ fun XServerScreen(
                 // Resume processes before exiting so they can receive SIGTERM cleanly.
                 forceResumeIfSuspended()
                 exit(xServerView!!.getxServer().winHandler, PluviaApp.xEnvironment, frameRating, currentAppInfo, container, appId, onExit, navigateBack)
+                true
             }
+
+            else -> false
         }
     }
 
@@ -1946,6 +1954,7 @@ fun XServerScreen(
             isVisible = showQuickMenu,
             onDismiss = dismissOverlayMenu,
             onItemSelected = onQuickMenuItemSelected,
+            renderer = xServerView?.renderer,
             isPerformanceHudEnabled = isPerformanceHudEnabled,
             performanceHudConfig = performanceHudConfig,
             onPerformanceHudConfigChanged = ::applyPerformanceHudConfig,

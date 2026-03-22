@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color.TRANSPARENT
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -69,27 +68,6 @@ data class StorageInfo(
 )
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-  private val readStoragePermissionLauncher = registerForActivityResult(
-    ActivityResultContracts.RequestPermission(),
-) { granted ->
-    if (granted) {
-        runUsbDetection()
-    } else {
-        SnackbarManager.show(getString(R.string.usb_storage_permission_required))
-    }
-}
-
- //  Permission Launcher: Handles the return from System Settings
-    private val storagePermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
-    ) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageManager()) {
-            runUsbDetection()
-        } else {
-            SnackbarManager.show(getString(R.string.usb_all_files_access_required))
-        }
-    }
 
     private val safPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
@@ -359,6 +337,9 @@ class MainActivity : ComponentActivity() {
             )
         }
 
+        // Run new usb detection code
+        checkAndRequestPermission()
+        
         // Apply immersive mode based on user preference
         applyImmersiveMode()
 

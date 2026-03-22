@@ -4,10 +4,14 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color.TRANSPARENT
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.os.storage.StorageManager
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.OrientationEventListener
@@ -24,44 +28,48 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import coil.ImageLoader
-import coil.disk.DiskCache
-import coil.memory.MemoryCache
-import coil.intercept.Interceptor
-import coil.request.CachePolicy
 import app.gamenative.events.AndroidEvent
 import app.gamenative.service.SteamService
-import app.gamenative.service.gog.GOGService
 import app.gamenative.service.epic.EpicService
+import app.gamenative.service.gog.GOGService
 import app.gamenative.ui.PluviaMain
 import app.gamenative.ui.enums.Orientation
+import app.gamenative.ui.util.SnackbarManager
 import app.gamenative.utils.AnimatedPngDecoder
-import app.gamenative.data.GameSource
 import app.gamenative.utils.ContainerUtils
 import app.gamenative.utils.IconDecoder
 import app.gamenative.utils.IntentLaunchManager
 import app.gamenative.utils.LocaleHelper
-import app.gamenative.ui.util.SnackbarManager
+import coil.ImageLoader
+import coil.disk.DiskCache
+import coil.intercept.Interceptor
+import coil.memory.MemoryCache
+import coil.request.CachePolicy
 import com.posthog.PostHog
 import com.skydoves.landscapist.coil.LocalCoilImageLoader
 import com.winlator.core.AppUtils
 import com.winlator.inputcontrols.ControllerManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.EnumSet
-import kotlin.math.abs
 import okio.Path.Companion.toOkioPath
 import timber.log.Timber
-import android.content.pm.PackageManager
-import android.os.storage.StorageManager
 import java.io.File
-import android.os.Environment
-import android.provider.Settings
-import androidx.core.content.ContextCompat
+import java.util.EnumSet
+import kotlin.math.abs
+import androidx.core.content.edit
 import androidx.core.net.toUri
 
 @AndroidEntryPoint
+
+data class StorageInfo(
+    val rootPath: String,
+    val appPath: String,
+    val isRemovable: Boolean,
+    val isWritable: Boolean
+)
+
 class MainActivity : ComponentActivity() {
 
   private val readStoragePermissionLauncher = registerForActivityResult(
@@ -74,7 +82,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
- // 1. Permission Launcher: Handles the return from System Settings
+ //  Permission Launcher: Handles the return from System Settings
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) {
@@ -85,7 +93,35 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // 3. Logic to detect ANY USB storage and log/write files
+    private val safPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.data?.let { uri ->
+                contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+                getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                    .edit {
+                        putString("pref_usb_storage_uri", uri.toString())
+                    }
+                runUsbDetection()
+            }
+        }
+    }
+
+    private val multiplePermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { permissions ->
+        if (permissions.all { it.value }) {
+            runUsbDetection()
+        } else {
+            SnackbarManager.show(getString(R.string.usb_storage_permission_required))
+        }
+    }
+
+    // Logic to detect ANY USB storage and log/write files
     private fun runUsbDetection() {
         val storageManager = getSystemService(STORAGE_SERVICE) as StorageManager
         val volumes = storageManager.storageVolumes
@@ -114,25 +150,47 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // 4. Permission helper for Android 11+ (API 30+)
+    // 4. Hybrid Permission Helper: SAF for Android 11+, Standard for older
     private fun checkAndRequestPermission(): Boolean {
+        // Case 1: Android 11+ (API 30+) -> Use Storage Access Framework (SAF)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
+            val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+            val savedUriString = prefs.getString("pref_usb_storage_uri", null)
+
+            val hasPersistentPermission = if (savedUriString != null) {
+                val uri = savedUriString.toUri()
+                contentResolver.persistedUriPermissions.any {
+                    it.uri == uri && it.isReadPermission && it.isWritePermission
+                }
+            } else false
+
+            if (!hasPersistentPermission) {
                 SnackbarManager.show(getString(R.string.usb_all_files_access_prompt))
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = "package:$packageName".toUri()
-                storagePermissionLauncher.launch(intent)
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+                    // Added flags to ensure the permission can be made permanent
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+                }
+                safPermissionLauncher.launch(intent)
                 return false
             }
-        } else {
-         // Android 10 and below use standard storage permissions
-         if (ContextCompat.checkSelfPermission(
-                 this,
-                 Manifest.permission.READ_EXTERNAL_STORAGE
-             ) != PackageManager.PERMISSION_GRANTED
-         ) {
-            readStoragePermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-             return false
+        }
+        // Case 2: Android 10 and below -> Request BOTH Read and Write
+        else {
+            val readPerm = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            val writePerm = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+            if (readPerm != PackageManager.PERMISSION_GRANTED || writePerm != PackageManager.PERMISSION_GRANTED) {
+                // Launch a request for both permissions at once
+                val permissions = arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                )
+                // Note: You may need to update your launcher to 'RequestMultiplePermissions'
+                // or just use this launcher if it handles the array.
+                multiplePermissionsLauncher.launch(permissions)
+                return false
             }
         }
         return true
@@ -157,6 +215,50 @@ class MainActivity : ComponentActivity() {
                 pendingLaunchRequest = null
                 return request
             }
+        }
+
+        // Detect all external storage paths
+        fun detectAccessibleStorage(context: Context): List<StorageInfo> {
+            val results = mutableListOf<StorageInfo>()
+
+            val dirs = context.getExternalFilesDirs(null)
+
+            for (dir in dirs) {
+                if (dir == null) continue
+
+                try {
+                    val appPath = dir.absolutePath
+
+                    // Extract root path (removes /Android/data/...)
+                    val rootPath = appPath.substringBefore("/Android/")
+
+                    val isRemovable = Environment.isExternalStorageRemovable(dir)
+
+                    // ✅ Test write access
+                    val testFile = File(dir, "test_write.tmp")
+                    val isWritable = try {
+                        testFile.writeText("test")
+                        testFile.delete()
+                        true
+                    } catch (e: Exception) {
+                        false
+                    }
+
+                    results.add(
+                        StorageInfo(
+                            rootPath = rootPath,
+                            appPath = appPath,
+                            isRemovable = isRemovable,
+                            isWritable = isWritable
+                        )
+                    )
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            return results
         }
 
         // Atomically set a new pending launch request
@@ -246,6 +348,19 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
 
+        val storageList = detectAccessibleStorage(this)
+
+        for (storage in storageList) {
+            Timber.d(
+                """
+            Root: ${storage.rootPath}
+            App Dir: ${storage.appPath}
+            Removable: ${storage.isRemovable}
+            Writable: ${storage.isWritable}
+            """.trimIndent()
+            )
+        }
+
 // USB storage detection
         if (checkAndRequestPermission()) {
             runUsbDetection()
@@ -306,16 +421,18 @@ class MainActivity : ComponentActivity() {
                     .diskCache(diskCache)
                     .components {
                         // serve cached images when device has no internet
-                        add(Interceptor { chain ->
-                            val request = if (!NetworkMonitor.hasInternet.value) {
-                                chain.request.newBuilder()
-                                    .networkCachePolicy(CachePolicy.DISABLED)
-                                    .build()
-                            } else {
-                                chain.request
-                            }
-                            chain.proceed(request)
-                        })
+                        add(
+                            Interceptor { chain ->
+                                val request = if (!NetworkMonitor.hasInternet.value) {
+                                    chain.request.newBuilder()
+                                        .networkCachePolicy(CachePolicy.DISABLED)
+                                        .build()
+                                } else {
+                                    chain.request
+                                }
+                                chain.proceed(request)
+                            },
+                        )
                         add(IconDecoder.Factory())
                         add(AnimatedPngDecoder.Factory())
                     }

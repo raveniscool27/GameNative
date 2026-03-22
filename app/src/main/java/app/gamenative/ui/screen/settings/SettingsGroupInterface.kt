@@ -1,6 +1,7 @@
 package app.gamenative.ui.screen.settings
 
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageManager
 import androidx.compose.foundation.background
@@ -87,6 +88,7 @@ import app.gamenative.service.amazon.AmazonAuthManager
 import app.gamenative.utils.PlatformOAuthHandlers
 import app.gamenative.ui.util.PlatformAuthUiHelpers
 import app.gamenative.ui.util.SnackbarManager
+import java.io.File
 
 @Composable
 fun SettingsGroupInterface(
@@ -353,20 +355,27 @@ fun SettingsGroupInterface(
         val ctx = LocalContext.current
         val sm = ctx.getSystemService(StorageManager::class.java)
 
-        // All writable volumes: primary first, then every SD / USB
-        val dirs = remember {
-            ctx.getExternalFilesDirs(null)
-                .filterNotNull()
-                .filter { Environment.getExternalStorageState(it) == Environment.MEDIA_MOUNTED }
-                .filter { sm.getStorageVolume(it)?.isPrimary != true }
+        // Robust volume detection using StorageManager directly to handle OTG and other edge cases
+        val externalVolumes = remember {
+            val appDirs = ctx.getExternalFilesDirs(null).filterNotNull()
+            sm.storageVolumes
+                .filter { it.state == Environment.MEDIA_MOUNTED && !it.isPrimary }
+                .mapNotNull { volume ->
+                    val matchingDir = appDirs.find { dir -> sm.getStorageVolume(dir) == volume }
+                    if (matchingDir != null) {
+                        Pair(volume.getDescription(ctx), matchingDir)
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        // Constructed path for OTG/SD cases where getExternalFilesDirs might miss it
+                        volume.directory?.let { root ->
+                            Pair(volume.getDescription(ctx), File(root, "Android/data/${ctx.packageName}/files"))
+                        }
+                    } else null
+                }
         }
 
-        // Labels the user sees
-        val labels = remember(dirs) {
-            dirs.map { dir ->
-                sm.getStorageVolume(dir)?.getDescription(ctx) ?: dir.name
-            }
-        }
+        val labels = remember(externalVolumes) { externalVolumes.map { it.first } }
+        val dirs = remember(externalVolumes) { externalVolumes.map { it.second } }
+
         var useExternalStorage by rememberSaveable { mutableStateOf(PrefManager.useExternalStorage) }
         SettingsSwitch(
             colors = settingsTileColorsAlt(),
@@ -620,4 +629,3 @@ private fun Preview_SettingsScreen() {
         )
     }
 }
-

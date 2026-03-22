@@ -2,6 +2,7 @@ package app.gamenative.ui.components
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -12,8 +13,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import app.gamenative.PrefManager
 import app.gamenative.R
+import app.gamenative.ui.util.SnackbarManager
 import app.gamenative.utils.CustomGameScanner
+import timber.log.Timber
 
 /**
  * Converts a document tree URI to a file path.
@@ -94,15 +98,15 @@ fun requestPermissionsForPath(
         return
     }
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        CustomGameScanner.requestManageExternalStoragePermission(context)
-    } else {
+    // Android 11+ (R) and above uses SAF for specific folders
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
         val permissions = arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
         storagePermissionLauncher?.launch(permissions)
     }
+    // For Android 11+, we rely on SAF permission granted during folder picking
 }
 
 data class CustomGameFolderPicker(
@@ -127,11 +131,30 @@ fun rememberCustomGameFolderPicker(
             return@rememberLauncherForActivityResult
         }
 
-        val path = getPathFromTreeUri(uri)
-        if (path != null) {
-            onPathSelected(path)
-        } else {
-            onFailure(context.getString(R.string.custom_game_folder_picker_error))
+        try {
+            // 1. Ask for persistent permissions that remain after app restart
+            val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            context.contentResolver.takePersistableUriPermission(uri, takeFlags)
+
+            val path = getPathFromTreeUri(uri)
+            if (path != null) {
+                // 2. Store the persistent URI for this path in PrefManager
+                PrefManager.setString("saf_uri_$path", uri.toString())
+
+                // 3. Add logs to confirm the process
+                Timber.tag("CustomGameScanner").d("Persistent SAF access granted to: $path (URI: $uri)")
+
+                // 4. Show Snackbar confirmation
+                SnackbarManager.show("Custom Game Scanner: Access granted to $path")
+
+                onPathSelected(path)
+            } else {
+                onFailure(context.getString(R.string.custom_game_folder_picker_error))
+            }
+        } catch (e: Exception) {
+            Timber.tag("CustomGameScanner").e(e, "Failed to grant persistent SAF access")
+            onFailure("Failed to grant persistent access")
         }
     }
 
@@ -141,4 +164,3 @@ fun rememberCustomGameFolderPicker(
         )
     }
 }
-

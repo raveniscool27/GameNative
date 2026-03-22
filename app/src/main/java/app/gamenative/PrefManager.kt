@@ -112,6 +112,9 @@ object PrefManager {
     fun getString(key: String, defaultValue: String): String =
         getPref(stringPreferencesKey(key), defaultValue)
 
+    fun setString(key: String, value: String): Unit =
+        setPref(stringPreferencesKey(key), value)
+
     fun getFloat(key: String, defaultValue: Float): Float =
         getPref(floatPreferencesKey(key), defaultValue)
 

@@ -359,12 +359,6 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-// USB storage detection
-        if (checkAndRequestPermission()) {
-            runUsbDetection()
-        }
-
-
         // Apply immersive mode based on user preference
         applyImmersiveMode()
 

@@ -96,10 +96,15 @@ class MainActivity : ComponentActivity() {
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
-                contentResolver.takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-                )
+                val takeFlags = (result.data?.flags ?: 0) and
+                    (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                try {
+                    contentResolver.takePersistableUriPermission(uri, takeFlags)
+                } catch (e: SecurityException) {
+                    Timber.e(e, "Failed to persist SAF permission for %s", uri)
+                    SnackbarManager.show(getString(R.string.usb_storage_permission_required))
+                    return@let
+                }
                 getSharedPreferences("AppPrefs", MODE_PRIVATE)
                     .edit {
                         putString("pref_usb_storage_uri", uri.toString())

@@ -87,6 +87,7 @@ import app.gamenative.service.amazon.AmazonAuthManager
 import app.gamenative.utils.PlatformOAuthHandlers
 import app.gamenative.ui.util.PlatformAuthUiHelpers
 import app.gamenative.ui.util.SnackbarManager
+import app.gamenative.utils.StorageUtils
 
 @Composable
 fun SettingsGroupInterface(
@@ -355,16 +356,15 @@ fun SettingsGroupInterface(
 
         // All writable volumes: primary first, then every SD / USB
         val dirs = remember {
-            ctx.getExternalFilesDirs(null)
-                .filterNotNull()
+            StorageUtils.getAllExternalFilesDirs(ctx)
                 .filter { Environment.getExternalStorageState(it) == Environment.MEDIA_MOUNTED }
-                .filter { sm.getStorageVolume(it)?.isPrimary != true }
+                .filter { sm?.getStorageVolume(it)?.isPrimary != true }
         }
 
         // Labels the user sees
         val labels = remember(dirs) {
             dirs.map { dir ->
-                sm.getStorageVolume(dir)?.getDescription(ctx) ?: dir.name
+                sm?.getStorageVolume(dir)?.getDescription(ctx) ?: dir.name
             }
         }
         var useExternalStorage by rememberSaveable { mutableStateOf(PrefManager.useExternalStorage) }
@@ -620,4 +620,3 @@ private fun Preview_SettingsScreen() {
         )
     }
 }
-

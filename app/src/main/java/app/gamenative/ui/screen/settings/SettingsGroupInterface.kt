@@ -358,7 +358,7 @@ fun SettingsGroupInterface(
         val dirs = remember {
             // ContextCompat.getExternalFilesDirs returns ALL app-specific dirs.
             // It returns NULL for volumes that are not mounted, so we just filterNotNull().
-            val allVolumes = ContextCompat.getExternalFilesDirs(ctx, null).filterNotNull()
+            val allVolumes = StorageUtils.getAllExternalFilesDirs(ctx)
 
             // Filter 1: Identify SD Cards/USB by checking if they are "Removable"
             // This replaces the complex StorageManager/isPrimary logic

@@ -354,19 +354,34 @@ fun SettingsGroupInterface(
         val ctx = LocalContext.current
         val sm = ctx.getSystemService(StorageManager::class.java)
 
-        // All writable volumes: primary first, then every SD / USB
+        // All writable volumes: Filter for Removable (SD Card/USB) only
         val dirs = remember {
-            StorageUtils.getAllExternalFilesDirs(ctx)
-                .filter { Environment.getExternalStorageState(it) == Environment.MEDIA_MOUNTED }
-                .filter { sm?.getStorageVolume(it)?.isPrimary != true }
+            // ContextCompat.getExternalFilesDirs returns ALL app-specific dirs.
+            // It returns NULL for volumes that are not mounted, so we just filterNotNull().
+            val allVolumes = ContextCompat.getExternalFilesDirs(ctx, null).filterNotNull()
+
+            // Filter 1: Identify SD Cards/USB by checking if they are "Removable"
+            // This replaces the complex StorageManager/isPrimary logic
+            allVolumes.filter { dir ->
+                try {
+                    Environment.isExternalStorageRemovable(dir)
+                } catch (e: Exception) {
+                    // Fallback: If the check fails, assume it's secondary if it's NOT the primary data dir
+                    dir.absolutePath != ctx.getExternalFilesDir(null)?.absolutePath
+                }
+            }
+            // Optional: If you strictly want to hide the volume if the system reports it "Unknown" (rare)
+            // .filter { Environment.getExternalStorageState(it) != Environment.MEDIA_UNKNOWN }
         }
 
         // Labels the user sees
         val labels = remember(dirs) {
             dirs.map { dir ->
-                sm?.getStorageVolume(dir)?.getDescription(ctx) ?: dir.name
+                // Try to get a user-friendly name, fallback to the folder name (e.g., "1234-5678")
+                sm?.getStorageVolume(dir)?.getDescription(ctx) ?: "SD Card (${dir.name})"
             }
         }
+        
         var useExternalStorage by rememberSaveable { mutableStateOf(PrefManager.useExternalStorage) }
         SettingsSwitch(
             colors = settingsTileColorsAlt(),

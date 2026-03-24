@@ -1270,7 +1270,6 @@
     <string name="manifest_content_untrusted">Вміст не є надійним, тому його не інстальовано.</string>
     <string name="manifest_type_mismatch">Завантажений вміст не відповідає очікуваному типу.</string>
     <string name="manifest_glibc_not_supported">Збірки GLIBC не підтримуються.</string>
-
     <!-- Library: source not logged in splash -->
     <string name="library_source_not_logged_in_steam">Увійдіть, щоб отримати доступ до бібліотеки Steam.</string>
     <string name="library_source_not_logged_in_gog">Увійдіть, щоб отримати доступ до бібліотеки GOG.</string>
@@ -1282,4 +1281,3 @@
     <string name="install_failed_title">Помилка інсталяції</string>
     <string name="install_failed_message">Не вдалося інсталювати системні файли. Спробуйте ще раз. Якщо проблема не зникає, спробуйте іншу мережу або скористайтеся VPN.</string>
 </resources>
-

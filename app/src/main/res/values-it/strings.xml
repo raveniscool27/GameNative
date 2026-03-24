@@ -1270,7 +1270,6 @@
     <string name="manifest_content_untrusted">Content is not trusted and was not installed.</string>
     <string name="manifest_type_mismatch">Downloaded content does not match expected type.</string>
     <string name="manifest_glibc_not_supported">GLIBC builds are not supported.</string>
-
     <!-- Library: source not logged in splash -->
     <string name="library_source_not_logged_in_steam">Accedi per accedere alla tua libreria Steam.</string>
     <string name="library_source_not_logged_in_gog">Accedi per accedere alla tua libreria GOG.</string>

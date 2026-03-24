@@ -1144,7 +1144,6 @@
     <string name="manifest_content_untrusted">Indholdet er ikke betroet og blev ikke installeret.</string>
     <string name="manifest_type_mismatch">Downloadet indhold matcher ikke den forventede type.</string>
     <string name="manifest_glibc_not_supported">GLIBC-builds understøttes ikke.</string>
-
     <!-- Library: source not logged in splash -->
     <string name="library_source_not_logged_in_steam">Log ind for at få adgang til din Steam-bibliotek.</string>
     <string name="library_source_not_logged_in_gog">Log ind for at få adgang til din GOG-bibliotek.</string>

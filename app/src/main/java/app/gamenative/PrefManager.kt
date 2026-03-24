@@ -461,6 +461,13 @@ object PrefManager {
             setPref(FORCE_DLC, value)
         }
 
+    private val LOCAL_SAVES_ONLY = booleanPreferencesKey("local_saves_only")
+    var localSavesOnly: Boolean
+        get() = getPref(LOCAL_SAVES_ONLY, false)
+        set(value) {
+            setPref(LOCAL_SAVES_ONLY, value)
+        }
+
     private val STEAM_OFFLINE_MODE = booleanPreferencesKey("steam_offline_mode")
     var steamOfflineMode: Boolean
         get() = getPref(STEAM_OFFLINE_MODE, false)

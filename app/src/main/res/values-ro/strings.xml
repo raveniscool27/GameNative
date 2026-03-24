@@ -1279,7 +1279,6 @@
     <string name="manifest_content_untrusted">Conținutul nu este de încredere și nu a fost instalat.</string>
     <string name="manifest_type_mismatch">Conținutul descărcat nu corespunde tipului așteptat.</string>
     <string name="manifest_glibc_not_supported">Build-urile GLIBC nu sunt acceptate.</string>
-
     <!-- Library: source not logged in splash -->
     <string name="library_source_not_logged_in_steam">Conectează-te pentru a accesa biblioteca ta Steam.</string>
     <string name="library_source_not_logged_in_gog">Conectează-te pentru a accesa biblioteca ta GOG.</string>

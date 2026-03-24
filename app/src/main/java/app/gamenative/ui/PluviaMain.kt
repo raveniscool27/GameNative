@@ -882,6 +882,8 @@ fun PluviaMain(
                     setLoadingMessage = viewModel::setLoadingDialogMessage,
                     setMessageDialogState = setMessageDialogState,
                     onSuccess = viewModel::launchApp,
+                    isOffline = viewModel.isOffline.value,
+                    bootToContainer = state.bootToContainer,
                 )
             }
             onDismissClick = {
@@ -1512,6 +1514,7 @@ fun preLaunchApp(
         container.clearSessionMetadata()
 
         val gameSource = ContainerUtils.extractGameSourceFromContainerId(appId)
+        val isLocalSavesOnly = ContainerUtils.isLocalSavesOnly(context, appId)
 
         // When "Open container" is used we boot to desktop/file manager only — skip executable check
         if (!bootToContainer) {
@@ -1763,20 +1766,24 @@ fun preLaunchApp(
         // For GOG Games, sync cloud saves before launch (executable already verified above via GOGService.getLaunchExecutable)
         val isGOGGame = gameSource == GameSource.GOG
         if (isGOGGame) {
-            Timber.tag("GOG").i("[Cloud Saves] GOG Game detected for $appId — syncing cloud saves before launch")
-
-            // Sync cloud saves (download latest saves before playing)
-            Timber.tag("GOG").d("[Cloud Saves] Starting pre-game download sync for $appId")
-            val syncSuccess = app.gamenative.service.gog.GOGService.syncCloudSaves(
-                context = context,
-                appId = appId,
-            )
-
-            if (!syncSuccess) {
-                Timber.tag("GOG").w("[Cloud Saves] Download sync failed for $appId, proceeding with launch anyway")
-                // Don't block launch on sync failure - log warning and continue
+            if (isLocalSavesOnly) {
+                Timber.tag("GOG").i("[Cloud Saves] Local saves only enabled for $appId — skipping pre-game cloud sync")
             } else {
-                Timber.tag("GOG").i("[Cloud Saves] Download sync completed successfully for $appId")
+                Timber.tag("GOG").i("[Cloud Saves] GOG Game detected for $appId — syncing cloud saves before launch")
+
+                // Sync cloud saves (download latest saves before playing)
+                Timber.tag("GOG").d("[Cloud Saves] Starting pre-game download sync for $appId")
+                val syncSuccess = app.gamenative.service.gog.GOGService.syncCloudSaves(
+                    context = context,
+                    appId = appId,
+                )
+
+                if (!syncSuccess) {
+                    Timber.tag("GOG").w("[Cloud Saves] Download sync failed for $appId, proceeding with launch anyway")
+                    // Don't block launch on sync failure - log warning and continue
+                } else {
+                    Timber.tag("GOG").i("[Cloud Saves] Download sync completed successfully for $appId")
+                }
             }
 
             setLoadingDialogVisible(false)
@@ -1796,20 +1803,24 @@ fun preLaunchApp(
         // For Epic Games, sync cloud saves before launch (executable already verified above via EpicService.getLaunchExecutable)
         val isEpicGame = gameSource == GameSource.EPIC
         if (isEpicGame) {
-            // Handle Cloud Saves
-            Timber.tag("Epic").i("[Cloud Saves] Epic Game detected for $appId — syncing cloud saves before launch")
-            // Sync cloud saves (download latest saves before playing)
-            Timber.tag("Epic").d("[Cloud Saves] Starting pre-game download sync for $appId")
-            val syncSuccess = app.gamenative.service.epic.EpicCloudSavesManager.syncCloudSaves(
-                context = context,
-                appId = gameId,
-            )
-
-            if (!syncSuccess) {
-                Timber.tag("Epic").w("[Cloud Saves] Download sync failed for $appId, proceeding with launch anyway")
-                // Don't block launch on sync failure - log warning and continue
+            if (isLocalSavesOnly) {
+                Timber.tag("Epic").i("[Cloud Saves] Local saves only enabled for $appId — skipping pre-game cloud sync")
             } else {
-                Timber.tag("Epic").i("[Cloud Saves] Download sync completed successfully for $appId")
+                // Handle Cloud Saves
+                Timber.tag("Epic").i("[Cloud Saves] Epic Game detected for $appId — syncing cloud saves before launch")
+                // Sync cloud saves (download latest saves before playing)
+                Timber.tag("Epic").d("[Cloud Saves] Starting pre-game download sync for $appId")
+                val syncSuccess = app.gamenative.service.epic.EpicCloudSavesManager.syncCloudSaves(
+                    context = context,
+                    appId = gameId,
+                )
+
+                if (!syncSuccess) {
+                    Timber.tag("Epic").w("[Cloud Saves] Download sync failed for $appId, proceeding with launch anyway")
+                    // Don't block launch on sync failure - log warning and continue
+                } else {
+                    Timber.tag("Epic").i("[Cloud Saves] Download sync completed successfully for $appId")
+                }
             }
 
             // Delete Ownership Token if exists
@@ -1821,8 +1832,12 @@ fun preLaunchApp(
             return@launch
         }
 
-        if (skipCloudSync) {
-            Timber.tag("preLaunchApp").w("Skipping Steam Cloud sync for $appId by user request")
+        if (skipCloudSync || isLocalSavesOnly) {
+            if (isLocalSavesOnly) {
+                Timber.tag("preLaunchApp").i("Local saves only enabled for $appId — skipping Steam Cloud sync")
+            } else {
+                Timber.tag("preLaunchApp").w("Skipping Steam Cloud sync for $appId by user request")
+            }
             setLoadingDialogVisible(false)
             onSuccess(context, appId)
             return@launch
